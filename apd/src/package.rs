@@ -17,12 +17,11 @@ pub struct PackageConfig {
 }
 
 pub fn read_ap_package_config() -> Vec<PackageConfig> {
-    let max_retry = 5;
-    for i in 0..max_retry {
+    loop {
         let file = match File::open("/data/adb/ap/package_config") {
             Ok(file) => file,
             Err(e) => {
-                warn!("Error opening file (attempt {}): {}", i + 1, e);
+                warn!("Error opening file: {}", e);
                 thread::sleep(Duration::from_secs(1));
                 continue;
             }
@@ -49,17 +48,14 @@ pub fn read_ap_package_config() -> Vec<PackageConfig> {
         
         thread::sleep(Duration::from_secs(1));
     }
-    return Vec::new();
 }
 
 fn write_ap_package_config(package_configs: &[PackageConfig]) {
-    let max_retry = 5;
-
-    for i in 0..max_retry {
+    loop {
         let file = match File::create("/data/adb/ap/package_config") {
             Ok(file) => file,
             Err(e) => {
-                warn!("Error creating file (attempt {}): {}", i + 1, e);
+                warn!("Error creating file: {}", e);
                 thread::sleep(Duration::from_secs(1));
                 continue;
             }
