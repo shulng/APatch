@@ -3,8 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::thread;
-use std::time::Duration;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfig {
@@ -22,7 +20,6 @@ pub fn read_ap_package_config() -> Vec<PackageConfig> {
             Ok(file) => file,
             Err(e) => {
                 warn!("Error opening file: {}", e);
-                thread::sleep(Duration::from_secs(1));
                 continue;
             }
         };
@@ -30,7 +27,7 @@ pub fn read_ap_package_config() -> Vec<PackageConfig> {
         let mut reader = csv::Reader::from_reader(file);
         let mut package_configs = Vec::new();
         let mut success = true;
-        
+
         for record in reader.deserialize() {
             match record {
                 Ok(config) => package_configs.push(config),
@@ -41,12 +38,10 @@ pub fn read_ap_package_config() -> Vec<PackageConfig> {
                 }
             }
         }
-        
+
         if success {
             return package_configs;
         }
-        
-        thread::sleep(Duration::from_secs(1));
     }
 }
 
@@ -56,14 +51,13 @@ fn write_ap_package_config(package_configs: &[PackageConfig]) {
             Ok(file) => file,
             Err(e) => {
                 warn!("Error creating file: {}", e);
-                thread::sleep(Duration::from_secs(1));
                 continue;
             }
         };
-        
+
         let mut writer = csv::Writer::from_writer(file);
         let mut success = true;
-        
+
         for config in package_configs {
             if let Err(e) = writer.serialize(config) {
                 warn!("Error serializing record: {}", e);
@@ -71,12 +65,10 @@ fn write_ap_package_config(package_configs: &[PackageConfig]) {
                 break;
             }
         }
-        
+
         if success {
             return;
         }
-        
-        thread::sleep(Duration::from_secs(1));
     }
 }
 
