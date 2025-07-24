@@ -47,10 +47,11 @@ pub fn read_ap_package_config() -> Vec<PackageConfig> {
 
 fn write_ap_package_config(package_configs: &[PackageConfig]) {
     loop {
-        let file = match File::create("/data/adb/ap/package_config") {
+        let temp_path = "/data/adb/ap/package_config.tmp";
+        let file = match File::create(temp_path) {
             Ok(file) => file,
             Err(e) => {
-                warn!("Error creating file: {}", e);
+                warn!("Error creating temp file: {}", e);
                 continue;
             }
         };
@@ -67,6 +68,15 @@ fn write_ap_package_config(package_configs: &[PackageConfig]) {
         }
 
         if success {
+            if let Err(e) = writer.flush() {
+                warn!("Error flushing writer: {}", e);
+                continue;
+            }
+
+            if let Err(e) = std::fs::rename(temp_path, "/data/adb/ap/package_config") {
+                warn!("Error renaming temp file: {}", e);
+                continue;
+            }
             return;
         }
     }
